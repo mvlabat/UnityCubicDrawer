@@ -1,40 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class CubicTextDrawer
+    class SceneView
     {
-        private char[] text;
-        public string Text
-        {
-            set
-            {
-                text = value.ToUpper().ToCharArray();
-                DrawText();
-            }
-        }
+        private SceneModel model;
 
-        public CubicTextDrawer(string text = "")
+        public SceneView(SceneModel model)
         {
-            if (SymbolMap.Count == 0)
-            {
-                InitializeSymbolMap();
-            }
-
-            if (text.Length > 0)
-            {
-                Text = text;
-            }
+            this.model = model;
+            InitializeSymbolMap();
         }
 
         const float CubeSizeX = 0.05F;
         const float CubeSizeY = 0.05F;
-        private void DrawText()
+        public void DrawText()
         {
+            char[] text = model.TextParameter.ToUpper().ToCharArray();
             int height = SymbolMap['A'].GetLength(0);
 
             // Calculating text length with spaces.
@@ -80,9 +63,9 @@ namespace Assets.Scripts
             Debug.Log("Cube placed: (" + x + ", " + y + ")");
         }
 
-        private static Dictionary<char, byte[,]> SymbolMap = new Dictionary<char, byte[,]>();
+        private Dictionary<char, byte[,]> SymbolMap = new Dictionary<char, byte[,]>();
 
-        private static void InitializeSymbolMap()
+        private void InitializeSymbolMap()
         {
             SymbolMap.Add('A', new byte[,]
             {

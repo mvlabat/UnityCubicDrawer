@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    public static class SceneParameters
+    class SceneModel
     {
-        public static string TextParameter;
+        public string TextParameter;
     }
 }
