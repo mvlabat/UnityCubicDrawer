@@ -13,29 +13,42 @@ namespace Assets.Scripts
             InitializeSymbolMap();
         }
 
-        const float CubeSizeX = 0.05F;
-        const float CubeSizeY = 0.05F;
         public void DrawText()
         {
             char[] text = model.TextParameter.ToUpper().ToCharArray();
-            int height = SymbolMap['A'].GetLength(0);
 
-            // Calculating text length with spaces.
-            int length = 0;
+            // Calculating text height and width with spaces.
+            int textWidth = 0;
             foreach (char c in text)
             {
-                length += (c == ' ') ? 1 : SymbolMap[c].GetLength(1);
+                textWidth += 1 + (c == ' ' ? 1 : SymbolMap[c].GetLength(1));
             }
+            int textHeight = SymbolMap['A'].GetLength(0);
+
+            // Getting view sizes;
+            float middleClipPane = Camera.main.nearClipPlane + (Camera.main.farClipPlane - Camera.main.nearClipPlane) / 2;
+            Vector3 bottomLeft = Camera.main.ScreenToWorldPoint(new Vector3(0, 0, middleClipPane));
+            Vector3 topRight = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, middleClipPane));
+            float screenWidth = topRight.x - bottomLeft.x;
+            float screenHeight = topRight.y - bottomLeft.y;
+
+            // Setting cube size.
+            float maxMagnitude = Mathf.Max(screenWidth, screenHeight);
+            float cubeSize = (maxMagnitude - maxMagnitude / 10) / (screenWidth > screenHeight ? textWidth : textHeight);
+            Debug.Log(maxMagnitude);
+            Debug.Log(cubeSize);
 
             // Starting position.
-            float position = -CubeSizeX*length/2;
+            Vector3 position = bottomLeft + (topRight - bottomLeft) / 2;
+            position.x -= cubeSize * textWidth / 2;
+            position.y -= cubeSize * textHeight / 2;
 
             // Drawing.
             foreach (char c in text)
             {
                 if (c == ' ')
                 {
-                    position += CubeSizeX * 2;
+                    position.x += cubeSize * 2;
                     continue;
                 }
 
@@ -47,20 +60,21 @@ namespace Assets.Scripts
                     {
                         if (symbolBytes[i, j] == 1)
                         {
-                            PlaceCube(position + CubeSizeX * j, height - CubeSizeY * i);
+                            PlaceCube(new Vector3(position.x + cubeSize * j, position.y - cubeSize * i, position.z), cubeSize);
                         }
                     }
                 }
-                position += CubeSizeX + CubeSizeX * symbolBytes.GetLength(1);
+                position.x += cubeSize + cubeSize * symbolBytes.GetLength(1);
             }
         }
 
-        private void PlaceCube(float x, float y)
+        private void PlaceCube(Vector3 position, float cubeSize)
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.transform.position = new Vector3(x, y, 0);
-            cube.transform.localScale = new Vector3(CubeSizeX, CubeSizeY);
-            Debug.Log("Cube placed: (" + x + ", " + y + ")");
+            cube.transform.position = position;
+            cube.transform.localScale = new Vector3(cubeSize, cubeSize, cubeSize);
+            Debug.Log("Cube placed: (" + position.x + ", " + position.y + ")");
+            Debug.Log("Cube placed: " + position);
         }
 
         private Dictionary<char, byte[,]> SymbolMap = new Dictionary<char, byte[,]>();
